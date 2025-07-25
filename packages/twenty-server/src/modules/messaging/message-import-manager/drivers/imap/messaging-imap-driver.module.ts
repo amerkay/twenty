@@ -2,6 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CacheStorageModule } from 'src/engine/core-modules/cache-storage/cache-storage.module';
 import { FeatureFlag } from 'src/engine/core-modules/feature-flag/feature-flag.entity';
 import { FeatureFlagModule } from 'src/engine/core-modules/feature-flag/feature-flag.module';
 import { ObjectMetadataRepositoryModule } from 'src/engine/object-metadata-repository/object-metadata-repository.module';
@@ -16,6 +17,7 @@ import { ImapGetMessagesService } from 'src/modules/messaging/message-import-man
 import { ImapHandleErrorService } from 'src/modules/messaging/message-import-manager/drivers/imap/services/imap-handle-error.service';
 import { ImapMessageLocatorService } from 'src/modules/messaging/message-import-manager/drivers/imap/services/imap-message-locator.service';
 import { ImapMessageProcessorService } from 'src/modules/messaging/message-import-manager/drivers/imap/services/imap-message-processor.service';
+import { MessagingSyncCancellationService } from 'src/modules/messaging/message-import-manager/services/messaging-sync-abort.service';
 import { MessageParticipantManagerModule } from 'src/modules/messaging/message-participant-manager/message-participant-manager.module';
 
 @Module({
@@ -28,6 +30,7 @@ import { MessageParticipantManagerModule } from 'src/modules/messaging/message-p
     FeatureFlagModule,
     WorkspaceDataSourceModule,
     MessageParticipantManagerModule,
+    CacheStorageModule,
   ],
   providers: [
     ImapClientProvider,
@@ -37,6 +40,7 @@ import { MessageParticipantManagerModule } from 'src/modules/messaging/message-p
     ImapHandleErrorService,
     ImapMessageLocatorService,
     ImapMessageProcessorService,
+    MessagingSyncCancellationService,
   ],
   exports: [
     ImapGetMessagesService,

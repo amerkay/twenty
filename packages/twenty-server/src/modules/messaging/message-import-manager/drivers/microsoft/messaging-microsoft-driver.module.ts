@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { CacheStorageModule } from 'src/engine/core-modules/cache-storage/cache-storage.module';
 import { FeatureFlagModule } from 'src/engine/core-modules/feature-flag/feature-flag.module';
 import { TwentyConfigModule } from 'src/engine/core-modules/twenty-config/twenty-config.module';
 import { ObjectMetadataRepositoryModule } from 'src/engine/object-metadata-repository/object-metadata-repository.module';
@@ -11,6 +12,7 @@ import { MicrosoftClientProvider } from 'src/modules/messaging/message-import-ma
 import { MicrosoftFetchByBatchService } from 'src/modules/messaging/message-import-manager/drivers/microsoft/services/microsoft-fetch-by-batch.service';
 import { MicrosoftGetMessagesService } from 'src/modules/messaging/message-import-manager/drivers/microsoft/services/microsoft-get-messages.service';
 import { MicrosoftHandleErrorService } from 'src/modules/messaging/message-import-manager/drivers/microsoft/services/microsoft-handle-error.service';
+import { MessagingSyncCancellationService } from 'src/modules/messaging/message-import-manager/services/messaging-sync-abort.service';
 
 import { MicrosoftGetMessageListService } from './services/microsoft-get-message-list.service';
 
@@ -22,6 +24,7 @@ import { MicrosoftGetMessageListService } from './services/microsoft-get-message
     OAuth2ClientManagerModule,
     WorkspaceDataSourceModule,
     ObjectMetadataRepositoryModule,
+    CacheStorageModule,
   ],
   providers: [
     MicrosoftClientProvider,
@@ -30,6 +33,7 @@ import { MicrosoftGetMessageListService } from './services/microsoft-get-message
     MicrosoftFetchByBatchService,
     MicrosoftHandleErrorService,
     MicrosoftOAuth2ClientManagerService,
+    MessagingSyncCancellationService,
   ],
   exports: [
     MicrosoftGetMessageListService,

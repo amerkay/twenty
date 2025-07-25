@@ -31,6 +31,7 @@ export type MessageChannel = {
   contactAutoCreationPolicy: MessageChannelContactAutoCreationPolicy;
   excludeNonProfessionalEmails: boolean;
   excludeGroupEmails: boolean;
+  loadMessagesAfterDate?: string | null;
   isSyncEnabled: boolean;
   visibility: MessageChannelVisibility;
   syncStatus: MessageChannelSyncStatus;

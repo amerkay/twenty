@@ -2,6 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CacheStorageModule } from 'src/engine/core-modules/cache-storage/cache-storage.module';
 import { FeatureFlag } from 'src/engine/core-modules/feature-flag/feature-flag.entity';
 import { FeatureFlagModule } from 'src/engine/core-modules/feature-flag/feature-flag.module';
 import { TwentyConfigModule } from 'src/engine/core-modules/twenty-config/twenty-config.module';
@@ -19,6 +20,7 @@ import { GmailGetMessagesService } from 'src/modules/messaging/message-import-ma
 import { GmailHandleErrorService } from 'src/modules/messaging/message-import-manager/drivers/gmail/services/gmail-handle-error.service';
 import { MessageParticipantManagerModule } from 'src/modules/messaging/message-participant-manager/message-participant-manager.module';
 import { OAuth2ClientProvider } from 'src/modules/messaging/message-import-manager/drivers/gmail/providers/oauth2-client.provider';
+import { MessagingSyncCancellationService } from 'src/modules/messaging/message-import-manager/services/messaging-sync-abort.service';
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { OAuth2ClientProvider } from 'src/modules/messaging/message-import-manag
     FeatureFlagModule,
     WorkspaceDataSourceModule,
     MessageParticipantManagerModule,
+    CacheStorageModule,
   ],
   providers: [
     GmailClientProvider,
@@ -43,6 +46,7 @@ import { OAuth2ClientProvider } from 'src/modules/messaging/message-import-manag
     GmailGetMessagesService,
     GmailGetMessageListService,
     GmailHandleErrorService,
+    MessagingSyncCancellationService,
   ],
   exports: [
     GmailGetMessagesService,

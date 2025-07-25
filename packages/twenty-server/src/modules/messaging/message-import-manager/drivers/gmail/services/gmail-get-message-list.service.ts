@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { isNonEmptyString } from '@sniptt/guards';
 import { gmail_v1 as gmailV1 } from 'googleapis';
 import { isDefined } from 'twenty-shared/utils';
 
 import { ConnectedAccountWorkspaceEntity } from 'src/modules/connected-account/standard-objects/connected-account.workspace-entity';
+import { MessageChannelWorkspaceEntity } from 'src/modules/messaging/common/standard-objects/message-channel.workspace-entity';
 import { MessageFolderWorkspaceEntity } from 'src/modules/messaging/common/standard-objects/message-folder.workspace-entity';
 import {
   MessageImportDriverException,
@@ -21,16 +22,24 @@ import { mapGmailDefaultFolderToCategoryOrUndefined } from 'src/modules/messagin
 import { GetMessageListsArgs } from 'src/modules/messaging/message-import-manager/types/get-message-lists-args.type';
 import { GetMessageListsResponse } from 'src/modules/messaging/message-import-manager/types/get-message-lists-response.type';
 import { assertNotNull } from 'src/utils/assert';
+import { MessagingSyncCancellationService } from 'src/modules/messaging/message-import-manager/services/messaging-sync-abort.service';
 
 @Injectable()
 export class GmailGetMessageListService {
+  private readonly logger = new Logger(GmailGetMessageListService.name);
+
   constructor(
     private readonly gmailClientProvider: GmailClientProvider,
     private readonly gmailGetHistoryService: GmailGetHistoryService,
     private readonly gmailHandleErrorService: GmailHandleErrorService,
+    private readonly messagingSyncCancellationService: MessagingSyncCancellationService,
   ) {}
 
   private async getMessageListWithoutCursor(
+    messageChannel: Pick<
+      MessageChannelWorkspaceEntity,
+      'loadMessagesAfterDate' | 'id'
+    >,
     connectedAccount: Pick<
       ConnectedAccountWorkspaceEntity,
       'provider' | 'refreshToken' | 'id' | 'handle'
@@ -46,13 +55,32 @@ export class GmailGetMessageListService {
     const messageExternalIds: string[] = [];
     const excludedCategories = this.comptuteExcludedCategories(messageFolders);
 
+    const categoryFilter =
+      computeGmailCategoryExcludeSearchFilter(excludedCategories);
+    const finalQuery = this.buildFinalQueryWithDateFilter(
+      categoryFilter,
+      messageChannel.loadMessagesAfterDate,
+    );
+
     while (hasMoreMessages) {
+      // Check if sync should be cancelled
+      if (
+        await this.messagingSyncCancellationService.shouldCancel(
+          messageChannel.id,
+        )
+      ) {
+        throw new MessageImportDriverException(
+          `Sync cancelled for channel ${messageChannel.id}`,
+          MessageImportDriverExceptionCode.SYNC_CANCELLED,
+        );
+      }
+
       const messageList = await gmailClient.users.messages
         .list({
           userId: 'me',
           maxResults: MESSAGING_GMAIL_USERS_MESSAGES_LIST_MAX_RESULT,
           pageToken,
-          q: computeGmailCategoryExcludeSearchFilter(excludedCategories),
+          q: finalQuery,
         })
         .catch((error) => {
           this.gmailHandleErrorService.handleGmailMessageListFetchError(error);
@@ -67,6 +95,10 @@ export class GmailGetMessageListService {
 
       const { messages } = messageList.data;
       const hasMessages = messages && messages.length > 0;
+
+      this.logger.log(
+        `Fetched ${messages?.length ?? 0} messages from Gmail API.`,
+      );
 
       if (!hasMessages) {
         break;
@@ -133,7 +165,33 @@ export class GmailGetMessageListService {
       await this.gmailClientProvider.getGmailClient(connectedAccount);
 
     if (!isNonEmptyString(messageChannel.syncCursor)) {
-      return this.getMessageListWithoutCursor(connectedAccount, messageFolders);
+      try {
+        return await this.getMessageListWithoutCursor(
+          messageChannel,
+          connectedAccount,
+          messageFolders,
+        );
+      } catch (error) {
+        // If SYNC_CANCELLED error is thrown, return an empty list, otherwise rethrow
+        if (
+          error instanceof MessageImportDriverException &&
+          error.code === MessageImportDriverExceptionCode.SYNC_CANCELLED
+        ) {
+          this.logger.log(
+            `Sync cancelled for channel ${messageChannel.id}, returning empty message list`,
+          );
+          return [
+            {
+              messageExternalIds: [],
+              nextSyncCursor: '',
+              previousSyncCursor: '',
+              messageExternalIdsToDelete: [],
+              folderId: undefined,
+            },
+          ];
+        }
+        throw error;
+      }
     }
 
     const { history, historyId: nextSyncCursor } =
@@ -216,5 +274,33 @@ export class GmailGetMessageListService {
     }
 
     return emailIds;
+  }
+
+  /**
+   * Builds the Gmail search query, applying date filter from channel
+   */
+  private buildFinalQueryWithDateFilter(
+    categoryFilter: string,
+    loadMessagesAfterDate?: string | null,
+  ): string {
+    let finalQuery = categoryFilter;
+
+    if (loadMessagesAfterDate) {
+      const sinceDate = new Date(loadMessagesAfterDate);
+      const formattedDate = [
+        sinceDate.getUTCFullYear(),
+        (sinceDate.getUTCMonth() + 1).toString().padStart(2, '0'),
+        sinceDate.getUTCDate().toString().padStart(2, '0'),
+      ].join('/');
+      finalQuery = `${categoryFilter} after:${formattedDate}`.trim();
+
+      this.logger.log(
+        `Using channel-specific loadMessagesAfterDate: ${sinceDate.toISOString()}. Gmail query: ${finalQuery}`,
+      );
+    } else {
+      this.logger.log('No date filter applied - fetching all messages');
+    }
+
+    return finalQuery;
   }
 }

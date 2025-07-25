@@ -31,7 +31,7 @@ export class MessagingGetMessageListService {
           messageFolders: messageChannel.messageFolders,
         });
       case ConnectedAccountProvider.MICROSOFT:
-        return this.microsoftGetMessageListService.getMessageLists({
+        return await this.microsoftGetMessageListService.getMessageLists({
           messageChannel,
           connectedAccount: messageChannel.connectedAccount,
           messageFolders: messageChannel.messageFolders,

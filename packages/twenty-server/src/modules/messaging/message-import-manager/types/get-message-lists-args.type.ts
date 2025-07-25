@@ -3,7 +3,10 @@ import { MessageChannelWorkspaceEntity } from 'src/modules/messaging/common/stan
 import { MessageFolderWorkspaceEntity } from 'src/modules/messaging/common/standard-objects/message-folder.workspace-entity';
 
 export type GetMessageListsArgs = {
-  messageChannel: Pick<MessageChannelWorkspaceEntity, 'syncCursor' | 'id'>;
+  messageChannel: Pick<
+    MessageChannelWorkspaceEntity,
+    'syncCursor' | 'id' | 'loadMessagesAfterDate'
+  >;
   connectedAccount: Pick<
     ConnectedAccountWorkspaceEntity,
     'provider' | 'refreshToken' | 'id' | 'handle' | 'connectionParameters'

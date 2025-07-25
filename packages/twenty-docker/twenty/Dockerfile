@@ -28,6 +28,7 @@ COPY ./packages/twenty-emails /app/packages/twenty-emails
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-server /app/packages/twenty-server
 
+RUN rm -rf /app/packages/twenty-server/dist
 RUN npx nx run twenty-server:build
 RUN mv /app/packages/twenty-server/dist /app/packages/twenty-server/build
 RUN npx nx run twenty-server:build:packageJson

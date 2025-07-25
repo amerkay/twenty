@@ -244,6 +244,7 @@ export const MESSAGE_CHANNEL_STANDARD_FIELD_IDS = {
   contactAutoCreationPolicy: '20202020-fc0e-4ba6-b259-a66ca89cfa38',
   excludeNonProfessionalEmails: '20202020-1df5-445d-b4f3-2413ad178431',
   excludeGroupEmails: '20202020-45a0-4be4-9164-5820a6a109fb',
+  loadMessagesAfterDate: '20202020-6a6b-9707-9134-5120a9a10994',
   messageChannelMessageAssociations: '20202020-49b8-4766-88fd-75f1e21b3d5f',
   messageFolders: '20202020-cc39-4432-9fe8-ec8ab8bbed94',
   isSyncEnabled: '20202020-d9a6-48e9-990b-b97fdf22e8dd',

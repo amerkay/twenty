@@ -6,6 +6,7 @@ import {
 } from '@/accounts/types/MessageChannel';
 import { CoreObjectNameSingular } from '@/object-metadata/types/CoreObjectNameSingular';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
+import { SettingsLoadMessagesAfterDateCard } from '@/settings/accounts/components/SettingsAccountsMessageAfterDateCard';
 import { SettingsAccountsMessageAutoCreationCard } from '@/settings/accounts/components/SettingsAccountsMessageAutoCreationCard';
 import { SettingsAccountsMessageVisibilityCard } from '@/settings/accounts/components/SettingsAccountsMessageVisibilityCard';
 import { SettingsOptionCardContentToggle } from '@/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
@@ -22,6 +23,7 @@ type SettingsAccountsMessageChannelDetailsProps = {
     | 'contactAutoCreationPolicy'
     | 'excludeNonProfessionalEmails'
     | 'excludeGroupEmails'
+    | 'loadMessagesAfterDate'
     | 'isSyncEnabled'
   >;
 };
@@ -77,6 +79,15 @@ export const SettingsAccountsMessageChannelDetails = ({
     });
   };
 
+  const handleLoadMessagesAfterDateChange = (value: string | null) => {
+    updateOneRecord({
+      idToUpdate: messageChannel.id,
+      updateOneRecordInput: {
+        loadMessagesAfterDate: value,
+      },
+    });
+  };
+
   return (
     <StyledDetailsContainer>
       <Section>
@@ -125,6 +136,16 @@ export const SettingsAccountsMessageChannelDetails = ({
             }
           />
         </Card>
+      </Section>
+      <Section>
+        <H2Title
+          title={t`Import Filters`}
+          description={t`Configure which messages to import from your email account`}
+        />
+        <SettingsLoadMessagesAfterDateCard
+          value={messageChannel.loadMessagesAfterDate}
+          onChange={handleLoadMessagesAfterDateChange}
+        />
       </Section>
     </StyledDetailsContainer>
   );

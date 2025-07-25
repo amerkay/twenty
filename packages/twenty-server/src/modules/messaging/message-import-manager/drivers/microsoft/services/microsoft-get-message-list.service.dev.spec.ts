@@ -31,10 +31,11 @@ const mockConnectedAccount: Pick<
 
 const mockMessageChannel: Pick<
   MessageChannelWorkspaceEntity,
-  'id' | 'syncCursor'
+  'id' | 'syncCursor' | 'loadMessagesAfterDate'
 > = {
   id: 'message-channel-id',
   syncCursor: '', // Should be empty for Microsoft as cursors are stored at the folder level
+  loadMessagesAfterDate: null,
 };
 
 xdescribe('Microsoft dev tests : get message list service', () => {
@@ -120,6 +121,7 @@ xdescribe('Microsoft dev tests : get message list service', () => {
         messageChannel: {
           id: 'message-channel-id',
           syncCursor: '',
+          loadMessagesAfterDate: null,
         },
         connectedAccount: mockConnectedAccount,
         messageFolders: [

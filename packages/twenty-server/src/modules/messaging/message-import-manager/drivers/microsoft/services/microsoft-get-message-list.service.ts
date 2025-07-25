@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import {
   PageCollection,
@@ -30,6 +30,8 @@ const MESSAGING_MICROSOFT_USERS_MESSAGES_LIST_MAX_RESULT = 999;
 
 @Injectable()
 export class MicrosoftGetMessageListService {
+  private readonly logger = new Logger(MicrosoftGetMessageListService.name);
+
   constructor(
     private readonly microsoftClientProvider: MicrosoftClientProvider,
     private readonly microsoftHandleErrorService: MicrosoftHandleErrorService,
@@ -71,10 +73,14 @@ export class MicrosoftGetMessageListService {
         syncCursor: messageChannel.syncCursor,
       });
 
-      const response = await this.getMessageList(connectedAccount, {
-        name: MessageFolderName.INBOX,
-        syncCursor: messageChannel.syncCursor,
-      });
+      const response = await this.getMessageList(
+        connectedAccount,
+        {
+          name: MessageFolderName.INBOX,
+          syncCursor: messageChannel.syncCursor,
+        },
+        messageChannel.loadMessagesAfterDate,
+      );
 
       result.push({
         ...response,
@@ -87,7 +93,11 @@ export class MicrosoftGetMessageListService {
     }
 
     for (const folder of messageFolders) {
-      const response = await this.getMessageList(connectedAccount, folder);
+      const response = await this.getMessageList(
+        connectedAccount,
+        folder,
+        messageChannel.loadMessagesAfterDate,
+      );
 
       result.push({
         ...response,
@@ -104,6 +114,7 @@ export class MicrosoftGetMessageListService {
       'provider' | 'refreshToken' | 'id'
     >,
     messageFolder: Pick<MessageFolderWorkspaceEntity, 'name' | 'syncCursor'>,
+    loadMessagesAfterDate?: string | null,
   ): Promise<GetOneMessageListResponse> {
     const messageExternalIds: string[] = [];
     const messageExternalIdsToDelete: string[] = [];
@@ -111,9 +122,7 @@ export class MicrosoftGetMessageListService {
     const microsoftClient =
       await this.microsoftClientProvider.getMicrosoftClient(connectedAccount);
 
-    const apiUrl = isNonEmptyString(messageFolder.syncCursor)
-      ? messageFolder.syncCursor
-      : `/me/mailfolders/${messageFolder.name}/messages/delta?$select=id`;
+    const apiUrl = this.buildApiUrl(messageFolder, loadMessagesAfterDate);
 
     const response: PageCollection = await microsoftClient
       .api(apiUrl)
@@ -169,5 +178,28 @@ export class MicrosoftGetMessageListService {
       nextSyncCursor: pageIterator.getDeltaLink() || '',
       folderId: undefined,
     };
+  }
+
+  private buildApiUrl(
+    messageFolder: Pick<MessageFolderWorkspaceEntity, 'name' | 'syncCursor'>,
+    loadMessagesAfterDate: string | null | undefined,
+  ): string {
+    if (isNonEmptyString(messageFolder.syncCursor)) {
+      return messageFolder.syncCursor;
+    }
+
+    const baseUrl = `/me/mailfolders/${messageFolder.name}/messages/delta`;
+    const params = new URLSearchParams();
+    params.append('$select', 'id');
+
+    if (loadMessagesAfterDate) {
+      const filterDate = new Date(loadMessagesAfterDate).toISOString();
+      params.append('$filter', `receivedDateTime ge ${filterDate}`);
+      this.logger.log(
+        `Using channel-specific loadMessagesAfterDate: ${filterDate}.`,
+      );
+    }
+
+    return `${baseUrl}?${params.toString()}`;
   }
 }

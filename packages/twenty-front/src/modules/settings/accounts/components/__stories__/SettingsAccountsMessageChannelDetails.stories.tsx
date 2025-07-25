@@ -24,6 +24,7 @@ const meta: Meta<typeof SettingsAccountsMessageChannelDetails> = {
       contactAutoCreationPolicy: MessageChannelContactAutoCreationPolicy.SENT,
       excludeNonProfessionalEmails: true,
       excludeGroupEmails: false,
+      loadMessagesAfterDate: null,
       isSyncEnabled: true,
       visibility: MessageChannelVisibility.SHARE_EVERYTHING,
     },

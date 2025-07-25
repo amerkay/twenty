@@ -76,7 +76,11 @@ describe('GmailGetMessageListService', () => {
       );
 
       const result = await service.getMessageLists({
-        messageChannel: { syncCursor: '', id: 'my-id' },
+        messageChannel: {
+          syncCursor: '',
+          id: 'my-id',
+          loadMessagesAfterDate: null,
+        },
         connectedAccount: mockConnectedAccount,
         messageFolders: [],
       });
@@ -127,7 +131,11 @@ describe('GmailGetMessageListService', () => {
       );
 
       const result = await service.getMessageLists({
-        messageChannel: { syncCursor: '', id: 'my-id' },
+        messageChannel: {
+          syncCursor: '',
+          id: 'my-id',
+          loadMessagesAfterDate: null,
+        },
         connectedAccount: mockConnectedAccount,
         messageFolders: [],
       });
@@ -178,7 +186,11 @@ describe('GmailGetMessageListService', () => {
       );
 
       const result = await service.getMessageLists({
-        messageChannel: { syncCursor: '', id: 'my-id' },
+        messageChannel: {
+          syncCursor: '',
+          id: 'my-id',
+          loadMessagesAfterDate: null,
+        },
         connectedAccount: mockConnectedAccount,
         messageFolders: [],
       });
@@ -210,7 +222,11 @@ describe('GmailGetMessageListService', () => {
       );
 
       const result = await service.getMessageLists({
-        messageChannel: { syncCursor: '', id: 'my-id' },
+        messageChannel: {
+          syncCursor: '',
+          id: 'my-id',
+          loadMessagesAfterDate: null,
+        },
         connectedAccount: mockConnectedAccount,
         messageFolders: [],
       });

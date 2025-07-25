@@ -41,6 +41,9 @@ import { MessagingSaveMessagesAndEnqueueContactCreationService } from 'src/modul
 import { MessagingSendMessageService } from 'src/modules/messaging/message-import-manager/services/messaging-send-message.service';
 import { MessageParticipantManagerModule } from 'src/modules/messaging/message-participant-manager/message-participant-manager.module';
 import { MessagingMonitoringModule } from 'src/modules/messaging/monitoring/messaging-monitoring.module';
+import { MessagingMessageChannelLoadDateUpdateListener } from 'src/modules/messaging/message-import-manager/listeners/messaging-message-channel-load-date-update.listener';
+import { MessagingSyncCancellationService } from 'src/modules/messaging/message-import-manager/services/messaging-sync-abort.service';
+
 @Module({
   imports: [
     RefreshTokensManagerModule,
@@ -75,6 +78,7 @@ import { MessagingMonitoringModule } from 'src/modules/messaging/monitoring/mess
     MessagingOngoingStaleCronJob,
     MessagingAddSingleMessageToCacheForImportJob,
     MessagingMessageImportManagerMessageChannelListener,
+    MessagingMessageChannelLoadDateUpdateListener,
     MessagingCleanCacheJob,
     MessagingMessageService,
     MessagingMessageListFetchService,
@@ -86,6 +90,7 @@ import { MessagingMonitoringModule } from 'src/modules/messaging/monitoring/mess
     MessagingCursorService,
     MessagingSendMessageService,
     MessagingAccountAuthenticationService,
+    MessagingSyncCancellationService,
   ],
   exports: [
     MessagingSendMessageService,

@@ -213,6 +213,16 @@ export class MessageChannelWorkspaceEntity extends BaseWorkspaceEntity {
   excludeGroupEmails: boolean;
 
   @WorkspaceField({
+    standardId: MESSAGE_CHANNEL_STANDARD_FIELD_IDS.loadMessagesAfterDate,
+    type: FieldMetadataType.DATE_TIME,
+    label: msg`Load messages after date`,
+    description: msg`Only import messages received on or after this date`,
+    icon: 'IconCalendar',
+  })
+  @WorkspaceIsNullable()
+  loadMessagesAfterDate: string | null;
+
+  @WorkspaceField({
     standardId: MESSAGE_CHANNEL_STANDARD_FIELD_IDS.isSyncEnabled,
     type: FieldMetadataType.BOOLEAN,
     label: msg`Is Sync Enabled`,
